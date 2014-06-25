@@ -30,6 +30,7 @@ angular.module('ng-mediaflow', [])
     })
     .directive('mfImg', function() {
         return {
+            priority: 0,
             restrict: 'EA',
             scope: {id: '@mfId'},
             template: '<img src="{{url}}">',
@@ -49,6 +50,14 @@ angular.module('ng-mediaflow', [])
                     return 'http://' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.jpg'
                 }
 
+                if (!$scope.width && !$scope.height) {
+                    if ('default' in this.aliases) {
+                        var config = this.aliases.default
+                        $scope.width = config.width
+                        $scope.height = config.height
+                    }
+                }
+
                 $scope.url = this.url($scope.id, {
                     width: $scope.width,
                     height: $scope.height
@@ -60,27 +69,42 @@ angular.module('ng-mediaflow', [])
             }
         }
     })
-    .directive('mfInterchange', function() {
+    .directive('mfInterchange', function($compile) {
         return {
+            priority: 1,
             restrict: 'A',
             require: 'mfImg',
-            link: function($scope, $element, $attrs, mfImgCtrl) {
-                //attr = "[/path/to/default.jpg, (default)], [/path/to/bigger-image.jpg, (large)]
+            link: function($scope, $element, $attrs, imgCtrl) {
+                var id = $attrs.mfId
                 var versions = $attrs.mfInterchange
+                var defaultAlias = 'default'
                 if (typeof versions === 'string') {
                     versions = JSON.parse(versions)
                 }
                 var interchangeParts = []
                 for (var name in versions) {
                     var config = versions[name]
-                    if (typeof config === 'string') {
-                        config = mfImgCtrl.alias(config)
+                    if (name === 'default') {
+                        defaultAlias = config
                     }
-                    var url = mfImgCtrl.url($attrs.mfId, config)
+                    if (typeof config === 'string') {
+                        config = imgCtrl.alias(config)
+                    }
+                    var url = imgCtrl.url(id, config)
                     interchangeParts.push('[' + url + ', (' + name + ')]')
                 }
+
                 var interchange = interchangeParts.join(',')
-                $element.find('img').attr('data-interchange', interchange)
+                var img = $element.find('img')
+                img.attr('data-interchange', interchange)
+
+                var def = imgCtrl.alias(defaultAlias)
+                if (def) {
+                    var defaultUrl = imgCtrl.url(id, def)
+                    var fallback = angular.element('<noscript/>')
+                    fallback.append('<img src="' + defaultUrl + '">')
+                    $element.append(fallback)
+                }
             }
         }
     })

@@ -3,6 +3,10 @@ angular.module('app', ['ng-mediaflow'])
         mediaflowProvider
             .setHost('keymedia.rju.keyteq.no')
             .alias({
+                default: {
+                    width: 100,
+                    height: 100
+                },
                 small: {
                     width: 300,
                     height: 200
