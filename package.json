@@ -1,0 +1,15 @@
+{
+  "name": "ng-mediaflow",
+  "version": "0.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raymond Julin <raymond.julin@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "gulp-connect": "~2.0.5",
+    "gulp": "~3.8.1"
+  }
+}
