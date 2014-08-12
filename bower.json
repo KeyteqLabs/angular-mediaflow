@@ -1,0 +1,22 @@
+{
+  "name": "angular-mediaflow",
+  "version": "0.2.0",
+  "homepage": "https://github.com/KeyteqLabs/angular-mediaflow",
+  "authors": [
+    "Raymond Julin <raymond.julin@gmail.com>"
+  ],
+  "description": "Mediaflow directives for Angular",
+  "main": "angular.mediaflow.js",
+  "keywords": [
+    "angular",
+    "mediaflow"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
