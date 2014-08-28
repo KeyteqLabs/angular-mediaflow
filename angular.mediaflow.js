@@ -47,7 +47,7 @@ angular.module('ng-mediaflow', [])
                 this.url = function(id, config) {
                     var w = config.width || ''
                     var h = config.height || ''
-                    return 'http://' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.jpg'
+                    return '//' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.jpg'
                 }
 
                 if (!$scope.width && !$scope.height) {
