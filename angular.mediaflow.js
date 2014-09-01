@@ -74,37 +74,36 @@ angular.module('ng-mediaflow', [])
             priority: 1,
             restrict: 'A',
             require: 'mfImg',
-            link: function($scope, $element, $attrs, imgCtrl) {
-                var id = $attrs.mfId
-                var versions = $attrs.mfInterchange
-                var defaultAlias = 'default'
-                if (typeof versions === 'string') {
-                    versions = JSON.parse(versions)
-                }
-                var interchangeParts = []
-                for (var name in versions) {
-                    var config = versions[name]
-                    if (name === 'default') {
-                        defaultAlias = config
-                    }
-                    if (typeof config === 'string') {
-                        config = imgCtrl.alias(config)
-                    }
-                    var url = imgCtrl.url(id, config)
-                    interchangeParts.push('[' + url + ', (' + name + ')]')
-                }
+            compile: function($element, $attrs) {
+                return {
+                    pre: function postLink($scope, $element, attrs, imgCtrl) {
+                        var id = attrs.mfId
+                        var versions = attrs.mfInterchange
+                        if (typeof versions === 'string') {
+                            try {
+                                versions = JSON.parse(versions)
+                            }
+                            catch (e) {
+                                throw new Error('Bad JSON given to <mf-img>');
+                            }
+                        }
+                        var interchangeParts = []
+                        for (var name in versions) {
+                            var config = versions[name]
+                            if (typeof config === 'string') {
+                                config = imgCtrl.alias(config)
+                            }
+                            var url = imgCtrl.url(id, config)
+                            interchangeParts.push('[' + url + ', (' + name + ')]')
+                        }
 
-                var interchange = interchangeParts.join(',')
-                var img = $element.find('img')
-                img.attr('data-interchange', interchange)
+                        var interchange = interchangeParts.join(',')
+                        var img = $element.find('img')
+                        img.attr('data-interchange', interchange)
 
-                var def = imgCtrl.alias(defaultAlias)
-                if (def) {
-                    var defaultUrl = imgCtrl.url(id, def)
-                    var fallback = angular.element('<noscript/>')
-                    fallback.append('<img src="' + defaultUrl + '">')
-                    $element.append(fallback)
-                }
+                        $compile($element.contents())($scope);
+                    }
+                };
             }
         }
     })
