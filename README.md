@@ -29,3 +29,9 @@ Or using Foundation Interchange:
 ```html
 <mf-img id="{{id}}" mf-interchange='{"small":"default", "large":"small"}'>
 ```
+
+You can easily specify versions inline:
+
+```html
+<mf-img id="{{id}}" mf-interchange='{"small":[300,200], "large":[600,300]}'>
+```
