@@ -33,7 +33,7 @@ angular.module('ng-mediaflow', [])
             priority: 0,
             restrict: 'EA',
             scope: {id: '@mfId'},
-            template: '<img src="{{url}}">',
+            template: '<img ng-src="{{url}}">',
             controller: function($scope, $parse, $attrs, mediaflow) {
                 $scope.host = mediaflow.host()
                 this.aliases = mediaflow.aliases()
