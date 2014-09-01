@@ -47,6 +47,7 @@ angular.module('ng-mediaflow', [])
                 this.url = function(id, config) {
                     var w = config.width || ''
                     var h = config.height || ''
+                    if (!w || !h) return null
                     return '//' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.jpg'
                 }
 
@@ -84,7 +85,7 @@ angular.module('ng-mediaflow', [])
                                 versions = JSON.parse(versions)
                             }
                             catch (e) {
-                                throw new Error('Bad JSON given to <mf-img>');
+                                throw new Error('Bad JSON given to <mf-img>')
                             }
                         }
                         var interchangeParts = []
@@ -92,6 +93,12 @@ angular.module('ng-mediaflow', [])
                             var config = versions[name]
                             if (typeof config === 'string') {
                                 config = imgCtrl.alias(config)
+                            }
+                            else if (Array.isArray(config)) {
+                                config = {
+                                    width: config[0],
+                                    height: config[0]
+                                }
                             }
                             var url = imgCtrl.url(id, config)
                             interchangeParts.push('[' + url + ', (' + name + ')]')
@@ -101,9 +108,9 @@ angular.module('ng-mediaflow', [])
                         var img = $element.find('img')
                         img.attr('data-interchange', interchange)
 
-                        $compile($element.contents())($scope);
+                        $compile($element.contents())($scope)
                     }
-                };
+                }
             }
         }
     })
