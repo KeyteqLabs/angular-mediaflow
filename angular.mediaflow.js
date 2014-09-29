@@ -32,11 +32,11 @@ angular.module('ng-mediaflow', [])
         return {
             priority: 0,
             restrict: 'EA',
-            scope: {id: '@mfId',imageType:'@imageType'},
+            scope: {id: '@mfId',mfFormat:'@mfFormat'},
             template: '<img ng-src="{{url}}">',
             controller: function($scope, $parse, $attrs, mediaflow) {
                 $scope.host = mediaflow.host()
-                $scope.imageType = $scope.imageType || 'jpg'
+                $scope.mfFormat = $scope.mfFormat || 'jpg'
                 this.aliases = mediaflow.aliases()
                 if ($attrs.alias && $attrs.alias in this.aliases) {
                     var aliasConfig = this.aliases[$attrs.alias]
@@ -48,9 +48,9 @@ angular.module('ng-mediaflow', [])
                 this.url = function(id, config) {
                     var w = config.width || ''
                     var h = config.height || ''
-                    var imageType = config.imageType || 'jpg'
+                    var mfFormat = config.mfFormat || 'jpg'
                     if (!w || !h) return null
-                    return '//' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.'+imageType
+                    return '//' + mediaflow.host() + '/' + w + 'x' + h + '/' + id + '.'+mfFormat
                 }
 
                 if (!$scope.width && !$scope.height) {
@@ -64,7 +64,7 @@ angular.module('ng-mediaflow', [])
                 $scope.url = this.url($scope.id, {
                     width: $scope.width,
                     height: $scope.height,
-                    imageType: $scope.imageType
+                    mfFormat: $scope.mfFormat
                 })
 
                 this.alias = function(name) {
@@ -82,7 +82,7 @@ angular.module('ng-mediaflow', [])
                 return {
                     pre: function postLink($scope, $element, attrs, imgCtrl) {
                         var id = attrs.mfId
-                        var type = attrs.imageType;
+                        var format = attrs.mfFormat;
                         var versions = attrs.mfInterchange
                         if (typeof versions === 'string') {
                             try {
@@ -97,13 +97,13 @@ angular.module('ng-mediaflow', [])
                             var config = versions[name]
                             if (typeof config === 'string') {
                                 config = imgCtrl.alias(config)
-                                congig.imageType = type;
+                                config.mfFormat = format;
                             }
                             else if (Array.isArray(config)) {
                                 config = {
                                     width: config[0],
                                     height: config[0],
-                                    imageType: type
+                                    mfFormat: format
                                 }
                             }
                             var url = imgCtrl.url(id, config)
