@@ -40,11 +40,7 @@ angular.module('ng-mediaflow', [])
             template: '<img>',
             link: function($scope, $element, attrs, ctrl) {
                 if (!('mfInterchange' in attrs)) {
-                    var src = ctrl.url($scope.id, {
-                        width: $scope.width,
-                        height: $scope.height,
-                        mfFormat: $scope.mfFormat
-                    })
+                    var src = ctrl.url($scope.id, $scope.mfImgConfig)
                     $element.find('img').attr('src', src)
                 }
             },
@@ -52,10 +48,7 @@ angular.module('ng-mediaflow', [])
                 $scope.mfFormat = $scope.mfFormat || 'jpg'
                 this.aliases = mediaflow.aliases()
                 if ($attrs.alias && $attrs.alias in this.aliases) {
-                    var aliasConfig = this.aliases[$attrs.alias]
-                    for (var key in aliasConfig) {
-                        $scope[key] = aliasConfig[key]
-                    }
+                    $scope.mfImgConfig = this.aliases[$attrs.alias]
                 }
 
                 this.url = function(id, config) {
@@ -69,6 +62,9 @@ angular.module('ng-mediaflow', [])
                         '//', host, (port ? ':'+port : ''),
                         '/', w, 'x', h, '/', id, '.', mfFormat
                     ]
+                    if ('original' in config) {
+                        parts.push('?original=' + parseInt(config.original, 10))
+                    }
                     return parts.join('')
                 }
 
@@ -114,6 +110,12 @@ angular.module('ng-mediaflow', [])
                                     width: config[0],
                                     height: config[1],
                                     mfFormat: format
+                                }
+                                if (config.length > 2) {
+                                    config.slice(2).forEach(function(conf) {
+                                        var parts = conf.split(':')
+                                        tempConfig[parts[0]] = parts[1]
+                                    })
                                 }
                                 config = tempConfig
                             }
