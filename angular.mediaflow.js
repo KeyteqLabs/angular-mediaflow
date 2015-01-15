@@ -1,4 +1,32 @@
 angular.module('ng-mediaflow', [])
+    .service('mediaflowConfigParser', function() {
+        return function(config) {
+            if (typeof config === 'string') {
+                try {
+                    config = JSON.parse(config)
+                }
+                catch (e) {
+                    throw new Error('Bad JSON given to mediaflowConfigParser')
+                }
+            }
+            return config
+        }
+    })
+    .service('mediaflowConfigFormatter', function() {
+        return function(config) {
+            var tempConfig = {
+                width: config[0],
+                height: config[1]
+            }
+            if (config.length > 2) {
+                config.slice(2).forEach(function(conf) {
+                    var parts = conf.split(':')
+                    tempConfig[parts[0]] = parts[1]
+                })
+            }
+            return tempConfig
+        }
+    })
     .provider('mediaflow', function() {
         this.host = null
         this.port = null
@@ -32,7 +60,7 @@ angular.module('ng-mediaflow', [])
             }
         }
     })
-    .directive('mfImg', function() {
+    .directive('mfImg', function(mediaflowConfigParser, mediaflowConfigFormatter) {
         return {
             priority: 0,
             restrict: 'EA',
@@ -41,14 +69,16 @@ angular.module('ng-mediaflow', [])
             link: function($scope, $element, attrs, ctrl) {
                 if (!('mfInterchange' in attrs)) {
                     var src = ctrl.url($scope.id, $scope.mfImgConfig)
+                    console.log('build src', src, attrs);
                     $element.find('img').attr('src', src)
                 }
             },
             controller: function($scope, $parse, $attrs, mediaflow) {
                 $scope.mfFormat = $scope.mfFormat || 'jpg'
+                $scope.mfImgConfig = null
                 this.aliases = mediaflow.aliases()
-                if ($attrs.alias && $attrs.alias in this.aliases) {
-                    $scope.mfImgConfig = this.aliases[$attrs.alias]
+                this.alias = function(name) {
+                    return name in this.aliases ? this.aliases[name] : null
                 }
 
                 this.url = function(id, config) {
@@ -68,18 +98,28 @@ angular.module('ng-mediaflow', [])
                     return parts.join('')
                 }
 
+                var config = null
+                if ($attrs.config)
+                    config = this.alias($attrs.config) || $attrs.config
+                else if ($attrs.alias)
+                    config = this.alias($attrs.alias) || $attrs.alias
+                // TODO Revise how formatting is handled
+                if (typeof config !== 'object') {
+                    config = mediaflowConfigParser(config)
+                    if (config)
+                        config = mediaflowConfigFormatter(config)
+                }
+                $scope.mfImgConfig = config
+
+
                 if (!$scope.width && !$scope.height && ('default' in this.aliases)) {
                     $scope.width = this.aliases.default.width
                     $scope.height = this.aliases.default.height
                 }
-
-                this.alias = function(name) {
-                    return this.aliases[name]
-                }
             }
         }
     })
-    .directive('mfInterchange', function($compile) {
+    .directive('mfInterchange', function($compile, mediaflowConfigFormatter, mediaflowConfigParser) {
         return {
             priority: 1,
             restrict: 'A',
@@ -88,39 +128,18 @@ angular.module('ng-mediaflow', [])
                 return {
                     pre: function preLink($scope, $element, attrs, imgCtrl) {
                         var id = attrs.mfId
-                        var format = attrs.mfFormat
-                        var versions = attrs.mfInterchange
-                        if (typeof versions === 'string') {
-                            try {
-                                versions = JSON.parse(versions)
-                            }
-                            catch (e) {
-                                throw new Error('Bad JSON given to <mf-img>')
-                            }
-                        }
-                        var interchangeParts = []
+                        var versions = mediaflowConfigParser(attrs.mfInterchange)
+
+                        var interchangeParts = [], config = null
                         for (var name in versions) {
-                            var config = versions[name]
-                            if (typeof config === 'string') {
+                            config = versions[name]
+                            if (typeof config === 'string')
                                 config = imgCtrl.alias(config)
-                                config.mfFormat = format
-                            }
-                            else if (Array.isArray(config)) {
-                                var tempConfig = {
-                                    width: config[0],
-                                    height: config[1],
-                                    mfFormat: format
-                                }
-                                if (config.length > 2) {
-                                    config.slice(2).forEach(function(conf) {
-                                        var parts = conf.split(':')
-                                        tempConfig[parts[0]] = parts[1]
-                                    })
-                                }
-                                config = tempConfig
-                            }
-                            var url = imgCtrl.url(id, config)
-                            interchangeParts.push('[' + url + ', (' + name + ')]')
+                            else if (Array.isArray(config))
+                                config = mediaflowConfigFormatter(config)
+
+                            config.mfFormat = attrs.mfFormat
+                            interchangeParts.push('[' + imgCtrl.url(id, config) + ', (' + name + ')]')
                         }
 
                         var attributeName = 'interchange'
