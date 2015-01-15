@@ -10,7 +10,8 @@ angular.module('app', ['ng-mediaflow']).config(function(mediaflowProvider) {
     .alias({
       default: {
         width: 100,
-        height: 100
+        height: 100,
+        original: 1
       },
       small: {
         width: 300,
@@ -21,7 +22,8 @@ angular.module('app', ['ng-mediaflow']).config(function(mediaflowProvider) {
 ```
 
 ```html
-<mf-img id="{{id}}" alias="small">
+<mf-img id="{{id}}" config="small">
+<mf-img id="{{id}}" config='[50,50,"original:1"]'>
 ```
 
 Or using Foundation Interchange:
